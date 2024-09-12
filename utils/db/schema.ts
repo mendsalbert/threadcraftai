@@ -8,17 +8,15 @@ import {
   boolean,
 } from "drizzle-orm/pg-core";
 
-// Update Users table
 export const Users = pgTable("users", {
   id: serial("id").primaryKey(),
-  stripeCustomerId: text("stripe_customer_id").unique(), // This should match the Clerk user ID
+  stripeCustomerId: text("stripe_customer_id").unique(),
   email: text("email").notNull().unique(),
   name: text("name"),
   points: integer("points").default(50),
   createdAt: timestamp("created_at").defaultNow(),
 });
 
-// Add Subscriptions table
 export const Subscriptions = pgTable("subscriptions", {
   id: serial("id").primaryKey(),
   userId: integer("user_id")
@@ -34,7 +32,6 @@ export const Subscriptions = pgTable("subscriptions", {
   cancelAtPeriodEnd: boolean("cancel_at_period_end").notNull().default(false),
 });
 
-// Add GeneratedContent table
 export const GeneratedContent = pgTable("generated_content", {
   id: serial("id").primaryKey(),
   userId: integer("user_id")

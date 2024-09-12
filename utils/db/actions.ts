@@ -1,8 +1,6 @@
-//@ts-nocheck
 import { db } from "./dbConfig";
 import { Users, Subscriptions, GeneratedContent } from "./schema";
-import { eq, sql, and, desc, ne } from "drizzle-orm";
-import { clerkClient } from "@clerk/nextjs";
+import { eq, sql, and, desc } from "drizzle-orm";
 
 export async function updateUserPoints(userId: string, points: number) {
   try {
@@ -48,7 +46,6 @@ export async function createOrUpdateSubscription(
   currentPeriodEnd: Date
 ) {
   try {
-    // First, get the user's ID from the Users table
     const [user] = await db
       .select({ id: Users.id })
       .from(Users)
@@ -60,7 +57,6 @@ export async function createOrUpdateSubscription(
       return null;
     }
 
-    // Check if a subscription already exists
     const existingSubscription = await db
       .select()
       .from(Subscriptions)
@@ -82,7 +78,6 @@ export async function createOrUpdateSubscription(
         .returning()
         .execute();
     } else {
-      // Create new subscription
       [subscription] = await db
         .insert(Subscriptions)
         .values({
@@ -101,25 +96,6 @@ export async function createOrUpdateSubscription(
     return subscription;
   } catch (error) {
     console.error("Error creating or updating subscription:", error);
-    return null;
-  }
-}
-
-export async function getActiveSubscription(userId: number) {
-  try {
-    const [subscription] = await db
-      .select()
-      .from(Subscriptions)
-      .where(
-        and(
-          eq(Subscriptions.userId, userId),
-          eq(Subscriptions.status, "active")
-        )
-      )
-      .execute();
-    return subscription;
-  } catch (error) {
-    console.error("Error fetching active subscription:", error);
     return null;
   }
 }
@@ -178,38 +154,6 @@ export async function getGeneratedContentHistory(
   }
 }
 
-export async function updateUserStripeCustomerId(
-  userId: number,
-  stripeCustomerId: string
-) {
-  try {
-    const [updatedUser] = await db
-      .update(Users)
-      .set({ stripeCustomerId })
-      .where(eq(Users.id, userId))
-      .returning()
-      .execute();
-    return updatedUser;
-  } catch (error) {
-    console.error("Error updating user Stripe customer ID:", error);
-    return null;
-  }
-}
-
-export async function getUserByStripeCustomerId(stripeCustomerId: string) {
-  try {
-    const [user] = await db
-      .select()
-      .from(Users)
-      .where(eq(Users.stripeCustomerId, stripeCustomerId))
-      .execute();
-    return user;
-  } catch (error) {
-    console.error("Error fetching user by Stripe customer ID:", error);
-    return null;
-  }
-}
-
 export async function createOrUpdateUser(
   clerkUserId: string,
   email: string,
@@ -246,7 +190,7 @@ export async function createOrUpdateUser(
           email,
           name,
           stripeCustomerId: clerkUserId,
-          points: 50, // Award 50 points to new users
+          points: 50,
         })
         .returning()
         .execute();

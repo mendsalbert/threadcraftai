@@ -10,7 +10,7 @@ const pricingPlans = [
   {
     name: "Basic",
     price: "9",
-    priceId: "price_1PyFKGBibz3ZDixDAaJ3HO74", // Replace with actual Stripe Price ID
+    priceId: "price_1PyFKGBibz3ZDixDAaJ3HO74",
     features: [
       "100 AI-generated posts per month",
       "Twitter thread generation",
@@ -20,7 +20,7 @@ const pricingPlans = [
   {
     name: "Pro",
     price: "29",
-    priceId: "price_1PyFN0Bibz3ZDixDqm9eYL8W", // Replace with actual Stripe Price ID
+    priceId: "price_1PyFN0Bibz3ZDixDqm9eYL8W",
     features: [
       "500 AI-generated posts per month",
       "Twitter, Instagram, and LinkedIn content",
@@ -77,7 +77,6 @@ export default function PricingPage() {
       await stripe.redirectToCheckout({ sessionId });
     } catch (error) {
       console.error("Error creating checkout session:", error);
-      // You might want to show an error message to the user here
     } finally {
       setIsLoading(false);
     }

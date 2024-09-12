@@ -22,7 +22,7 @@ import {
 import { GoogleGenerativeAI, Part } from "@google/generative-ai";
 import ReactMarkdown from "react-markdown";
 import { Navbar } from "@/components/Navbar";
-import { useAuth, SignInButton, useUser } from "@clerk/nextjs";
+import { SignInButton, useUser } from "@clerk/nextjs";
 import { useRouter } from "next/navigation";
 import {
   getUserPoints,
@@ -36,7 +36,6 @@ import { InstagramMock } from "@/components/social-mocks/InstagramMock";
 import { LinkedInMock } from "@/components/social-mocks/LinkedInMock";
 import Link from "next/link";
 
-// Initialize the Gemini API client
 const apiKey = process.env.NEXT_PUBLIC_GEMINI_API_KEY;
 const genAI = apiKey ? new GoogleGenerativeAI(apiKey) : null;
 
@@ -276,7 +275,6 @@ export default function GenerateContent() {
     <div className="bg-black min-h-screen text-white">
       <Navbar />
       <div className="flex flex-col lg:flex-row p-4 lg:p-6 gap-4 lg:gap-6 max-w-7xl mx-auto">
-        {/* History Sidebar */}
         <div className="w-full lg:w-1/4 bg-[#111111] p-4 rounded-lg overflow-y-auto lg:h-[calc(100vh-6rem)] mb-4 lg:mb-0">
           <h2 className="text-xl font-semibold mb-4">History</h2>
           {history.map((item) => (
@@ -306,7 +304,6 @@ export default function GenerateContent() {
           ))}
         </div>
 
-        {/* Main Content */}
         <div className="flex-1 space-y-4 lg:space-y-6">
           <h1 className="text-2xl lg:text-3xl font-bold mb-4 lg:mb-6">
             AI Content Generator
@@ -418,7 +415,6 @@ export default function GenerateContent() {
               )}
             </Button>
 
-            {/* Display selected history item or generated content */}
             {(selectedHistoryItem || generatedContent.length > 0) && (
               <div className="space-y-4 bg-[#111111] p-4 rounded-lg">
                 <h2 className="text-xl font-semibold">
@@ -463,7 +459,6 @@ export default function GenerateContent() {
               </div>
             )}
 
-            {/* Add this section for the mock-up */}
             {generatedContent.length > 0 && (
               <div className="bg-[#111111] p-4 rounded-lg">
                 <h2 className="text-xl font-semibold mb-4">Preview</h2>
