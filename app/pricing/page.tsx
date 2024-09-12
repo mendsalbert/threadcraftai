@@ -1,13 +1,16 @@
 "use client";
-import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { CheckIcon } from "lucide-react";
 import { Navbar } from "@/components/Navbar";
+import { useUser } from "@clerk/nextjs";
+import { useState } from "react";
+import { loadStripe } from "@stripe/stripe-js";
 
 const pricingPlans = [
   {
     name: "Basic",
-    price: "$9",
+    price: "9",
+    priceId: "price_1PyFKGBibz3ZDixDAaJ3HO74", // Replace with actual Stripe Price ID
     features: [
       "100 AI-generated posts per month",
       "Twitter thread generation",
@@ -16,7 +19,8 @@ const pricingPlans = [
   },
   {
     name: "Pro",
-    price: "$29",
+    price: "29",
+    priceId: "price_1PyFN0Bibz3ZDixDqm9eYL8W", // Replace with actual Stripe Price ID
     features: [
       "500 AI-generated posts per month",
       "Twitter, Instagram, and LinkedIn content",
@@ -27,6 +31,7 @@ const pricingPlans = [
   {
     name: "Enterprise",
     price: "Custom",
+    priceId: null,
     features: [
       "Unlimited AI-generated posts",
       "All social media platforms",
@@ -37,6 +42,47 @@ const pricingPlans = [
 ];
 
 export default function PricingPage() {
+  const { isSignedIn, user } = useUser();
+  const [isLoading, setIsLoading] = useState(false);
+
+  const handleSubscribe = async (priceId: string) => {
+    if (!isSignedIn) {
+      return;
+    }
+
+    setIsLoading(true);
+    try {
+      const response = await fetch("/api/create-checkout-session", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          priceId,
+          userId: user?.id,
+        }),
+      });
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || "Failed to create checkout session");
+      }
+
+      const { sessionId } = await response.json();
+      const stripe = await loadStripe(
+        process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY!
+      );
+      if (!stripe) {
+        throw new Error("Failed to load Stripe");
+      }
+      await stripe.redirectToCheckout({ sessionId });
+    } catch (error) {
+      console.error("Error creating checkout session:", error);
+      // You might want to show an error message to the user here
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-black text-gray-100">
       <Navbar />
@@ -54,7 +100,7 @@ export default function PricingPage() {
                 {plan.name}
               </h2>
               <p className="text-4xl font-bold mb-6 text-white">
-                {plan.price}
+                ${plan.price}
                 <span className="text-lg font-normal text-gray-400">
                   /month
                 </span>
@@ -71,10 +117,11 @@ export default function PricingPage() {
                 ))}
               </ul>
               <Button
-                asChild
+                onClick={() => plan.priceId && handleSubscribe(plan.priceId)}
+                disabled={isLoading || !plan.priceId}
                 className="w-full bg-white text-black hover:bg-gray-200"
               >
-                <Link href="/signup">Choose Plan</Link>
+                {isLoading ? "Processing..." : "Choose Plan"}
               </Button>
             </div>
           ))}

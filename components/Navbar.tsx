@@ -1,6 +1,5 @@
 "use client";
 import Link from "next/link";
-import Image from "next/image";
 import {
   SignInButton,
   SignUpButton,
@@ -20,8 +19,8 @@ export function Navbar() {
     <header className="container mx-auto px-4 sm:px-8 py-4 sm:py-6 border-b">
       <nav className="flex flex-wrap justify-between items-center max-w-6xl mx-auto">
         <div className="flex items-center">
-          <span className="text-xl sm:text-xl font-bold text-white">
-            ThreadCraft AI
+          <span className="text-xl cursor-pointer sm:text-xl font-bold text-white">
+            <Link href={"/"}>ThreadCraft AI</Link>
           </span>
         </div>
         <button
@@ -76,6 +75,11 @@ export function Navbar() {
                     Sign In
                   </button>
                 </SignInButton>
+                <SignUpButton mode="modal">
+                  <button className="text-gray-400 border border-1 border-gray-200 rounded-md px-3 py-1 hover:text-white transition-colors mt-2 sm:mt-0">
+                    Sign Up
+                  </button>
+                </SignUpButton>
               </>
             )}
           </div>
