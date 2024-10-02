@@ -1,6 +1,7 @@
 import { db } from "./dbConfig";
 import { Users, Subscriptions, GeneratedContent } from "./schema";
 import { eq, sql, and, desc } from "drizzle-orm";
+import { sendWelcomeEmail, initMailtrap } from "../mailtrap";
 
 export async function updateUserPoints(userId: string, points: number) {
   try {
@@ -195,6 +196,16 @@ export async function createOrUpdateUser(
         .returning()
         .execute();
       console.log("New user created:", newUser);
+
+      // Send welcome email only on the server side
+      if (typeof window === "undefined") {
+        await initMailtrap();
+        console.log("initmailtrap---------");
+
+        await sendWelcomeEmail(email, name);
+        console.log("email sent---------");
+      }
+
       return newUser;
     }
   } catch (error) {
