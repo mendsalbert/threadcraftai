@@ -4,7 +4,7 @@ export const initMailtrap = async () => {
   if (typeof window === "undefined") {
     const { MailtrapClient } = await import("mailtrap");
     client = new MailtrapClient({
-      token: "07e05acb730e3e70736676d1c546bdd9",
+      token: process.env.MAILTRAP_API_TOKEN!,
     });
   }
 };
@@ -19,7 +19,7 @@ export const sendWelcomeEmail = async (toEmail: string, name: string) => {
     await initMailtrap();
   }
 
-  const sender = { name: "ThreadCraft AI", email: "welcome@threadcraft.ai" };
+  const sender = { name: "ThreadCraft AI", email: "hello@demomailtrap.com" };
 
   await client.send({
     from: sender,

@@ -53,6 +53,7 @@ export async function POST(req: Request) {
     if (email) {
       try {
         await createOrUpdateUser(id, email, name);
+
         console.log(`User ${id} created/updated successfully`);
       } catch (error) {
         console.error("Error creating/updating user:", error);
@@ -61,8 +62,8 @@ export async function POST(req: Request) {
     }
   }
 
-  console.log(`Webhook with an ID of ${evt.data.id} and type of ${eventType}`);
-  console.log("Webhook body:", body);
+  // console.log(`Webhook with an ID of ${evt.data.id} and type of ${eventType}`);
+  // console.log("Webhook body:", body);
 
   return NextResponse.json(
     { message: "Webhook processed successfully" },

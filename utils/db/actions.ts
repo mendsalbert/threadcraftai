@@ -162,52 +162,74 @@ export async function createOrUpdateUser(
 ) {
   try {
     console.log("Creating or updating user:", clerkUserId, email, name);
-    const existingUser = await db
+
+    // Check if user exists by clerkUserId
+    const [existingUser] = await db
       .select()
       .from(Users)
       .where(eq(Users.stripeCustomerId, clerkUserId))
+      .limit(1)
       .execute();
 
-    console.log("Existing user query result:", existingUser);
-
-    if (existingUser.length > 0) {
-      console.log("User exists, updating");
+    if (existingUser) {
+      // Update existing user
       const [updatedUser] = await db
         .update(Users)
-        .set({
-          name,
-          email,
-        })
+        .set({ name, email })
         .where(eq(Users.stripeCustomerId, clerkUserId))
         .returning()
         .execute();
       console.log("Updated user:", updatedUser);
       return updatedUser;
-    } else {
-      console.log("User doesn't exist, inserting new user");
-      const [newUser] = await db
-        .insert(Users)
-        .values({
-          email,
-          name,
-          stripeCustomerId: clerkUserId,
-          points: 50,
-        })
+    }
+
+    // Check if user exists by email
+    const [userWithEmail] = await db
+      .select()
+      .from(Users)
+      .where(eq(Users.email, email))
+      .limit(1)
+      .execute();
+
+    if (userWithEmail) {
+      // Update user with email
+      const [updatedUser] = await db
+        .update(Users)
+        .set({ name, stripeCustomerId: clerkUserId })
+        .where(eq(Users.email, email))
         .returning()
         .execute();
-      console.log("New user created:", newUser);
+      console.log("Updated user:", updatedUser);
+      sendWelcomeEmail(email, name);
+      return updatedUser;
+    }
 
-      // Send welcome email only on the server side
-      if (typeof window === "undefined") {
-        await initMailtrap();
-        console.log("initmailtrap---------");
+    // Create new user
+    const [newUser] = await db
+      .insert(Users)
+      .values({ email, name, stripeCustomerId: clerkUserId, points: 50 })
+      .returning()
+      .execute();
+    console.log("New user created:", newUser);
 
-        await sendWelcomeEmail(email, name);
-        console.log("email sent---------");
+    // Send welcome email
+    try {
+      const response = await fetch("/api/send-welcome-email", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, name }),
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to send welcome email");
       }
 
-      return newUser;
+      console.log("Welcome email sent successfully");
+    } catch (error) {
+      console.error("Error sending welcome email:", error);
     }
+
+    return newUser;
   } catch (error) {
     console.error("Error creating or updating user:", error);
     return null;
