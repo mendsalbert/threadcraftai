@@ -163,7 +163,6 @@ export async function createOrUpdateUser(
   try {
     console.log("Creating or updating user:", clerkUserId, email, name);
 
-    // Check if user exists by clerkUserId
     const [existingUser] = await db
       .select()
       .from(Users)
@@ -172,7 +171,6 @@ export async function createOrUpdateUser(
       .execute();
 
     if (existingUser) {
-      // Update existing user
       const [updatedUser] = await db
         .update(Users)
         .set({ name, email })
@@ -183,7 +181,6 @@ export async function createOrUpdateUser(
       return updatedUser;
     }
 
-    // Check if user exists by email
     const [userWithEmail] = await db
       .select()
       .from(Users)
@@ -192,7 +189,6 @@ export async function createOrUpdateUser(
       .execute();
 
     if (userWithEmail) {
-      // Update user with email
       const [updatedUser] = await db
         .update(Users)
         .set({ name, stripeCustomerId: clerkUserId })
@@ -204,31 +200,13 @@ export async function createOrUpdateUser(
       return updatedUser;
     }
 
-    // Create new user
     const [newUser] = await db
       .insert(Users)
       .values({ email, name, stripeCustomerId: clerkUserId, points: 50 })
       .returning()
       .execute();
     console.log("New user created:", newUser);
-
-    // Send welcome email
-    try {
-      const response = await fetch("/api/send-welcome-email", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, name }),
-      });
-
-      if (!response.ok) {
-        throw new Error("Failed to send welcome email");
-      }
-
-      console.log("Welcome email sent successfully");
-    } catch (error) {
-      console.error("Error sending welcome email:", error);
-    }
-
+    sendWelcomeEmail(email, name);
     return newUser;
   } catch (error) {
     console.error("Error creating or updating user:", error);
